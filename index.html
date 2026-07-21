@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Control</title>
+    <title>Super Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
@@ -12,51 +12,158 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background-color: #0b0c1b; color: #ffffff; padding: 20px; }
-        .title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 25px; color: #a855f7; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .admin-card { background-color: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .admin-card:hover { border-color: #a855f7; }
-        .admin-card i { font-size: 28px; color: #a855f7; margin-bottom: 10px; }
-        .admin-card p { font-size: 14px; color: #e2e8f0; }
-        .upload-section { background-color: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 20px; display: none; }
-        .upload-section.active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
-        .form-group input { width: 100%; padding: 12px; background-color: #0b0c1b; border: 1px solid #23243f; border-radius: 8px; color: #fff; outline: none; }
-        .btn-submit { width: 100%; padding: 12px; background: linear-gradient(90deg, #a855f7, #ff3b5c); border: none; border-radius: 8px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; }
+        body { background-color: #0b0c1b; color: #ffffff; padding: 15px; }
+        
+        .header-title { text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #a855f7; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* Navigation Grid */
+        .admin-nav-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .nav-card { background: #18192d; border: 1px solid #23243f; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .nav-card:hover, .nav-card.active { border-color: #a855f7; background: #23243f; }
+        .nav-card i { font-size: 22px; color: #a855f7; margin-bottom: 6px; }
+        .nav-card p { font-size: 13px; color: #e2e8f0; font-weight: 600; }
+
+        /* Sections */
+        .admin-section { display: none; background: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .admin-section.active { display: block; }
+        
+        .section-header { font-size: 16px; font-weight: 700; color: #a855f7; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #23243f; padding-bottom: 10px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px; background: #0b0c1b; border: 1px solid #282945; border-radius: 8px; color: #fff; outline: none; font-size: 13px; }
+        .form-group textarea { height: 70px; resize: none; }
+
+        .btn-purple { width: 100%; padding: 11px; background: #a855f7; border: none; border-radius: 8px; color: #fff; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 5px; }
+        .btn-purple:active { background: #9333ea; }
+
+        .sub-card { background: #121324; border: 1px solid #23243f; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+        .sub-title { font-size: 13px; font-weight: bold; color: #ff3b5c; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
 
-    <div class="title">👑 Admin Control Panel</div>
+    <div class="header-title">
+        <i class="fa-solid fa-user-shield"></i> Super Admin Panel
+    </div>
 
-    <div class="admin-grid">
-        <div class="admin-card" onclick="toggleUploadForm()">
+    <!-- Admin Navigation Menu -->
+    <div class="admin-nav-grid">
+        <div class="nav-card active" onclick="switchSection('sec-video', this)">
             <i class="fa-solid fa-video"></i>
             <p>ভিডিও আপলোড</p>
         </div>
-        <div class="admin-card"><i class="fa-solid fa-sack-dollar"></i><p>অ্যাড সেটআপ</p></div>
-        <div class="admin-card"><i class="fa-solid fa-tag"></i><p>ক্যাটাগরি</p></div>
-        <div class="admin-card"><i class="fa-solid fa-link"></i><p>মেনু লিংক</p></div>
-        <div class="admin-card"><i class="fa-solid fa-gear"></i><p>সেটিংস</p></div>
+        <div class="nav-card" onclick="switchSection('sec-ads', this)">
+            <i class="fa-solid fa-sack-dollar"></i>
+            <p>অ্যাড সেটআপ</p>
+        </div>
+        <div class="nav-card" onclick="switchSection('sec-links', this)">
+            <i class="fa-solid fa-link"></i>
+            <p>মেনু লিংক</p>
+        </div>
+        <div class="nav-card" onclick="switchSection('sec-settings', this)">
+            <i class="fa-solid fa-gear"></i>
+            <p>সেটিংস</p>
+        </div>
     </div>
 
-    <div id="upload-form" class="upload-section">
-        <h3 style="margin-bottom: 15px; color: #a855f7;">নতুন ভিডিও পোস্ট করুন</h3>
+    <!-- 1. VIDEO UPLOAD SECTION -->
+    <div id="sec-video" class="admin-section active">
+        <div class="section-header"><i class="fa-solid fa-upload"></i> নতুন ভিডিও পোস্ট করুন</div>
         <div class="form-group">
             <label>ভিডিও শিরোনাম (Title)</label>
-            <input type="text" id="video-title" placeholder="ভিডিওর নাম লিখুন">
+            <input type="text" id="v-title" placeholder="যেমন: New Viral Video">
         </div>
         <div class="form-group">
-            <label>ভিডিও লিংক (Embed / Video URL)</label>
-            <input type="text" id="video-url" placeholder="https://...">
+            <label>থাম্বনেইল ছবির লিংক (Thumbnail URL)</label>
+            <input type="text" id="v-thumb" placeholder="https://...">
         </div>
-        <button class="btn-submit" onclick="postVideo()">পোস্ট করুন</button>
+        <div class="form-group">
+            <label>ভিডিও ইমবেড লিংক (Streamtape URL)</label>
+            <input type="text" id="v-url" placeholder="https://streamtape.com/e/...">
+        </div>
+        <div class="form-group">
+            <label>ক্যাটাগরি</label>
+            <select id="v-cat">
+                <option value="viral">VIRAL</option>
+                <option value="natok">নাটক / মুভি</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>কতগুলো অ্যাড দেখতে হবে (Ads Count)</label>
+            <input type="number" id="v-ads" value="4">
+        </div>
+        <button class="btn-purple" onclick="uploadVideo()">পোস্ট করুন</button>
+    </div>
+
+    <!-- 2. ADS SETUP SECTION (SCREENSHOT 1 EXACT REPLICA) -->
+    <div id="sec-ads" class="admin-section">
+        <div class="section-header"><i class="fa-solid fa-sack-dollar"></i> অ্যাড সেটআপ</div>
+
+        <!-- Monetag Ads -->
+        <div class="sub-card">
+            <div class="sub-title"><i class="fa-solid fa-rectangle-ad"></i> Monetag (2nd Ad)</div>
+            <div class="form-group">
+                <label>Zone ID (Example: 18110498)</label>
+                <input type="text" id="ad-monetag" placeholder="18110498">
+            </div>
+            <button class="btn-purple" onclick="saveMonetag()">Save Monetag ID</button>
+        </div>
+
+        <!-- Adsgram Ads -->
+        <div class="sub-card">
+            <div class="sub-title"><i class="fa-solid fa-chart-line"></i> Adsgram Block ID</div>
+            <div class="form-group">
+                <label>Example: 12345</label>
+                <input type="text" id="ad-adsgram" placeholder="12345">
+            </div>
+            <button class="btn-purple" onclick="saveAdsgram()">Add ID</button>
+        </div>
+
+        <!-- Banner Ads -->
+        <div class="sub-card">
+            <div class="sub-title"><i class="fa-solid fa-code"></i> Banner Ads (HTML)</div>
+            <div class="form-group">
+                <textarea id="ad-banner" placeholder='<a href="..."><img src="..."></a>'></textarea>
+            </div>
+            <button class="btn-purple" onclick="saveBanner()">Add Banner</button>
+        </div>
+    </div>
+
+    <!-- 3. LINKS SECTION (SCREENSHOT 2 EXACT REPLICA) -->
+    <div id="sec-links" class="admin-section">
+        <div class="section-header"><i class="fa-solid fa-link"></i> লিংক সেটিং</div>
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="link-title" placeholder="যেমন: Join Telegram Channel">
+        </div>
+        <div class="form-group">
+            <label>URL</label>
+            <input type="text" id="link-url" placeholder="https://t.me/...">
+        </div>
+        <button class="btn-purple" onclick="addCustomLink()">Add</button>
+    </div>
+
+    <!-- 4. SETTINGS SECTION (SCREENSHOT 3 EXACT REPLICA) -->
+    <div id="sec-settings" class="admin-section">
+        <div class="section-header"><i class="fa-solid fa-gear"></i> সেটিংস</div>
+        <div class="form-group">
+            <label>Telegram Bot App Link (Direct Link)</label>
+            <input type="text" id="set-botlink" placeholder="https://t.me/your_bot/app">
+        </div>
+        <div class="form-group">
+            <label>Tutorial ID (Youtube)</label>
+            <input type="text" id="set-ytid" placeholder="যেমন: e7AemaxhT94">
+        </div>
+        <div class="form-group">
+            <label>Daily Limit</label>
+            <input type="number" id="set-limit" placeholder="10">
+        </div>
+        <button class="btn-purple" onclick="saveGlobalSettings()">Save</button>
     </div>
 
     <script>
-        // ✅ আপনার নিজস্ব Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCtKYGQ-fvuVifuDNJ_tlNmKJ2gjEqyYWU",
             authDomain: "viralzone-3e974.firebaseapp.com",
@@ -64,42 +171,97 @@
             projectId: "viralzone-3e974",
             storageBucket: "viralzone-3e974.firebasestorage.app",
             messagingSenderId: "63267470809",
-            appId: "1:63267470809:web:fa7f5d92063e69c42aadc8",
-            measurementId: "G-7L6FPDW7X2"
+            appId: "1:63267470809:web:fa7f5d92063e69c42aadc8"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        function toggleUploadForm() {
-            const form = document.getElementById('upload-form');
-            form.classList.toggle('active');
+        // Switch Sections
+        function switchSection(secId, element) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(secId).classList.add('active');
+            element.classList.add('active');
         }
 
-        function postVideo() {
-            const title = document.getElementById('video-title').value;
-            const url = document.getElementById('video-url').value;
+        // Upload Video
+        function uploadVideo() {
+            const title = document.getElementById('v-title').value;
+            const thumb = document.getElementById('v-thumb').value;
+            let url = document.getElementById('v-url').value;
+            const cat = document.getElementById('v-cat').value;
+            const ads = document.getElementById('v-ads').value;
 
-            if(!title || !url) {
-                alert("অনুগ্রহ করে শিরোনাম এবং লিংক দুটিই দিন।");
-                return;
-            }
+            if(!title || !url) { alert("শিরোনাম এবং ভিডিও লিংক দিন!"); return; }
+            if(url.includes("streamtape.com/v/")) url = url.replace("/v/", "/e/");
 
-            // Firebase Realtime Database-এ তথ্য পাঠানো
-            const newVideoRef = database.ref('videos').push();
-            newVideoRef.set({
-                title: title,
-                url: url,
-                timestamp: Date.now()
-            }, (error) => {
-                if (error) {
-                    alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
-                } else {
-                    alert("ভিডিও সফলভাবে পোস্ট করা হয়েছে!");
-                    document.getElementById('video-title').value = '';
-                    document.getElementById('video-url').value = '';
+            database.ref('videos').push().set({
+                title: title, thumb: thumb, url: url, category: cat, adsCount: parseInt(ads), views: 0, timestamp: Date.now()
+            }, (err) => {
+                if(err) alert("সমস্যা হয়েছে: " + err.message);
+                else { alert("পোস্ট সফলভাবে পাবলিশ হয়েছে!"); clearVideoFields(); }
+            });
+        }
+
+        function clearVideoFields() {
+            document.getElementById('v-title').value = '';
+            document.getElementById('v-thumb').value = '';
+            document.getElementById('v-url').value = '';
+        }
+
+        // Save Monetag
+        function saveMonetag() {
+            const val = document.getElementById('ad-monetag').value;
+            database.ref('ad_config/monetag_id').set(val, (err) => {
+                if(!err) alert("Monetag ID সফলভাবে সেভ হয়েছে!");
+            });
+        }
+
+        // Save Adsgram
+        function saveAdsgram() {
+            const val = document.getElementById('ad-adsgram').value;
+            database.ref('ad_config/adsgram_id').set(val, (err) => {
+                if(!err) alert("Adsgram Block ID সেভ হয়েছে!");
+            });
+        }
+
+        // Save Banner Ads
+        function saveBanner() {
+            const val = document.getElementById('ad-banner').value;
+            database.ref('ad_config/banner_code').set(val, (err) => {
+                if(!err) alert("Banner Code সেভ হয়েছে!");
+            });
+        }
+
+        // Add Custom Links
+        function addCustomLink() {
+            const title = document.getElementById('link-title').value;
+            const url = document.getElementById('link-url').value;
+
+            if(!title || !url) { alert("Title এবং URL দুটিই দিন।"); return; }
+
+            database.ref('custom_links').push().set({ title: title, url: url }, (err) => {
+                if(!err) {
+                    alert("লিংক সফলভাবে যোগ করা হয়েছে!");
+                    document.getElementById('link-title').value = '';
+                    document.getElementById('link-url').value = '';
                 }
+            });
+        }
+
+        // Save Global Settings
+        function saveGlobalSettings() {
+            const botlink = document.getElementById('set-botlink').value;
+            const ytid = document.getElementById('set-ytid').value;
+            const limit = document.getElementById('set-limit').value;
+
+            database.ref('settings').set({
+                bot_link: botlink,
+                yt_id: ytid,
+                daily_limit: limit
+            }, (err) => {
+                if(!err) alert("সেটিংস সফলভাবে আপডেট করা হয়েছে!");
             });
         }
     </script>
