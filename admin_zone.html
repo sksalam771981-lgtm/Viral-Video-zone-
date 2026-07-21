@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #0b0c1b; color: #ffffff; padding: 20px; }
+        .title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 25px; color: #a855f7; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .admin-card { background-color: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .admin-card:hover { border-color: #a855f7; }
+        .admin-card i { font-size: 28px; color: #a855f7; margin-bottom: 10px; }
+        .admin-card p { font-size: 14px; color: #e2e8f0; }
+        .upload-section { background-color: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 20px; display: none; }
+        .upload-section.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; background-color: #0b0c1b; border: 1px solid #23243f; border-radius: 8px; color: #fff; outline: none; }
+        .btn-submit { width: 100%; padding: 12px; background: linear-gradient(90deg, #a855f7, #ff3b5c); border: none; border-radius: 8px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="title">👑 Admin Control Panel</div>
+
+    <div class="admin-grid">
+        <div class="admin-card" onclick="toggleUploadForm()">
+            <i class="fa-solid fa-video"></i>
+            <p>ভিডিও আপলোড</p>
+        </div>
+        <div class="admin-card"><i class="fa-solid fa-sack-dollar"></i><p>অ্যাড সেটআপ</p></div>
+        <div class="admin-card"><i class="fa-solid fa-tag"></i><p>ক্যাটাগরি</p></div>
+        <div class="admin-card"><i class="fa-solid fa-link"></i><p>মেনু লিংক</p></div>
+        <div class="admin-card"><i class="fa-solid fa-gear"></i><p>সেটিংস</p></div>
+    </div>
+
+    <div id="upload-form" class="upload-section">
+        <h3 style="margin-bottom: 15px; color: #a855f7;">নতুন ভিডিও পোস্ট করুন</h3>
+        <div class="form-group">
+            <label>ভিডিও শিরোনাম (Title)</label>
+            <input type="text" id="video-title" placeholder="ভিডিওর নাম লিখুন">
+        </div>
+        <div class="form-group">
+            <label>ভিডিও লিংক (Embed / Video URL)</label>
+            <input type="text" id="video-url" placeholder="https://...">
+        </div>
+        <button class="btn-submit" onclick="postVideo()">পোস্ট করুন</button>
+    </div>
+
+    <script>
+        // ✅ আপনার নিজস্ব Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtKYGQ-fvuVifuDNJ_tlNmKJ2gjEqyYWU",
+            authDomain: "viralzone-3e974.firebaseapp.com",
+            databaseURL: "https://viralzone-3e974-default-rtdb.firebaseio.com",
+            projectId: "viralzone-3e974",
+            storageBucket: "viralzone-3e974.firebasestorage.app",
+            messagingSenderId: "63267470809",
+            appId: "1:63267470809:web:fa7f5d92063e69c42aadc8",
+            measurementId: "G-7L6FPDW7X2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function toggleUploadForm() {
+            const form = document.getElementById('upload-form');
+            form.classList.toggle('active');
+        }
+
+        function postVideo() {
+            const title = document.getElementById('video-title').value;
+            const url = document.getElementById('video-url').value;
+
+            if(!title || !url) {
+                alert("অনুগ্রহ করে শিরোনাম এবং লিংক দুটিই দিন।");
+                return;
+            }
+
+            // Firebase Realtime Database-এ তথ্য পাঠানো
+            const newVideoRef = database.ref('videos').push();
+            newVideoRef.set({
+                title: title,
+                url: url,
+                timestamp: Date.now()
+            }, (error) => {
+                if (error) {
+                    alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
+                } else {
+                    alert("ভিডিও সফলভাবে পোস্ট করা হয়েছে!");
+                    document.getElementById('video-title').value = '';
+                    document.getElementById('video-url').value = '';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
