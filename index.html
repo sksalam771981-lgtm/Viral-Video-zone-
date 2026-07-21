@@ -17,11 +17,11 @@
         .header-title { text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #a855f7; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         /* Navigation Grid */
-        .admin-nav-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        .nav-card { background: #18192d; border: 1px solid #23243f; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .admin-nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .nav-card { background: #18192d; border: 1px solid #23243f; border-radius: 12px; padding: 12px 6px; text-align: center; cursor: pointer; transition: 0.2s; }
         .nav-card:hover, .nav-card.active { border-color: #a855f7; background: #23243f; }
-        .nav-card i { font-size: 22px; color: #a855f7; margin-bottom: 6px; }
-        .nav-card p { font-size: 13px; color: #e2e8f0; font-weight: 600; }
+        .nav-card i { font-size: 20px; color: #a855f7; margin-bottom: 5px; }
+        .nav-card p { font-size: 11px; color: #e2e8f0; font-weight: 600; }
 
         /* Sections */
         .admin-section { display: none; background: #18192d; border: 1px solid #23243f; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
@@ -57,6 +57,10 @@
             <i class="fa-solid fa-sack-dollar"></i>
             <p>অ্যাড সেটআপ</p>
         </div>
+        <div class="nav-card" onclick="switchSection('sec-category', this)">
+            <i class="fa-solid fa-tag"></i>
+            <p>ক্যাটাগরি</p>
+        </div>
         <div class="nav-card" onclick="switchSection('sec-links', this)">
             <i class="fa-solid fa-link"></i>
             <p>মেনু লিংক</p>
@@ -72,35 +76,34 @@
         <div class="section-header"><i class="fa-solid fa-upload"></i> নতুন ভিডিও পোস্ট করুন</div>
         <div class="form-group">
             <label>ভিডিও শিরোনাম (Title)</label>
-            <input type="text" id="v-title" placeholder="যেমন: New Viral Video">
+            <input type="text" id="v-title" placeholder="Video Title">
         </div>
         <div class="form-group">
-            <label>থাম্বনেইল ছবির লিংক (Thumbnail URL)</label>
+            <label>ছবি (URL)</label>
             <input type="text" id="v-thumb" placeholder="https://...">
         </div>
         <div class="form-group">
-            <label>ভিডিও ইমবেড লিংক (Streamtape URL)</label>
-            <input type="text" id="v-url" placeholder="https://streamtape.com/e/...">
+            <label>লিংক (Embed Video URL)</label>
+            <input type="text" id="v-url" placeholder="Download link...">
         </div>
         <div class="form-group">
             <label>ক্যাটাগরি</label>
             <select id="v-cat">
-                <option value="viral">VIRAL</option>
-                <option value="natok">নাটক / মুভি</option>
+                <option value="all">All</option>
+                <option value="viral">viral</option>
             </select>
         </div>
         <div class="form-group">
             <label>কতগুলো অ্যাড দেখতে হবে (Ads Count)</label>
-            <input type="number" id="v-ads" value="4">
+            <input type="number" id="v-ads" value="1">
         </div>
-        <button class="btn-purple" onclick="uploadVideo()">পোস্ট করুন</button>
+        <button class="btn-purple" onclick="uploadVideo()">PUBLISH VIDEO</button>
     </div>
 
-    <!-- 2. ADS SETUP SECTION (SCREENSHOT 1 EXACT REPLICA) -->
+    <!-- 2. ADS SETUP SECTION -->
     <div id="sec-ads" class="admin-section">
         <div class="section-header"><i class="fa-solid fa-sack-dollar"></i> অ্যাড সেটআপ</div>
 
-        <!-- Monetag Ads -->
         <div class="sub-card">
             <div class="sub-title"><i class="fa-solid fa-rectangle-ad"></i> Monetag (2nd Ad)</div>
             <div class="form-group">
@@ -110,7 +113,6 @@
             <button class="btn-purple" onclick="saveMonetag()">Save Monetag ID</button>
         </div>
 
-        <!-- Adsgram Ads -->
         <div class="sub-card">
             <div class="sub-title"><i class="fa-solid fa-chart-line"></i> Adsgram Block ID</div>
             <div class="form-group">
@@ -120,7 +122,6 @@
             <button class="btn-purple" onclick="saveAdsgram()">Add ID</button>
         </div>
 
-        <!-- Banner Ads -->
         <div class="sub-card">
             <div class="sub-title"><i class="fa-solid fa-code"></i> Banner Ads (HTML)</div>
             <div class="form-group">
@@ -130,7 +131,21 @@
         </div>
     </div>
 
-    <!-- 3. LINKS SECTION (SCREENSHOT 2 EXACT REPLICA) -->
+    <!-- 3. CATEGORY SECTION (SCREENSHOT EXACT REPLICA) -->
+    <div id="sec-category" class="admin-section">
+        <div class="section-header"><i class="fa-solid fa-tag"></i> ক্যাটাগরি</div>
+        <div class="form-group">
+            <label>ক্যাটাগরি আইডি (ছোট হাতের অক্ষর)</label>
+            <input type="text" id="cat-id" placeholder="viral">
+        </div>
+        <div class="form-group">
+            <label>ক্যাটাগরি নাম (Name)</label>
+            <input type="text" id="cat-name" placeholder="Name (ভাইরাল)">
+        </div>
+        <button class="btn-purple" onclick="addCategory()">Add</button>
+    </div>
+
+    <!-- 4. LINKS SECTION -->
     <div id="sec-links" class="admin-section">
         <div class="section-header"><i class="fa-solid fa-link"></i> লিংক সেটিং</div>
         <div class="form-group">
@@ -144,7 +159,7 @@
         <button class="btn-purple" onclick="addCustomLink()">Add</button>
     </div>
 
-    <!-- 4. SETTINGS SECTION (SCREENSHOT 3 EXACT REPLICA) -->
+    <!-- 5. SETTINGS SECTION -->
     <div id="sec-settings" class="admin-section">
         <div class="section-header"><i class="fa-solid fa-gear"></i> সেটিংস</div>
         <div class="form-group">
@@ -163,7 +178,6 @@
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCtKYGQ-fvuVifuDNJ_tlNmKJ2gjEqyYWU",
             authDomain: "viralzone-3e974.firebaseapp.com",
@@ -177,7 +191,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Switch Sections
         function switchSection(secId, element) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-card').forEach(c => c.classList.remove('active'));
@@ -185,7 +198,29 @@
             element.classList.add('active');
         }
 
-        // Upload Video
+        // Add Category Function
+        function addCategory() {
+            const catId = document.getElementById('cat-id').value.toLowerCase().trim();
+            const catName = document.getElementById('cat-name').value.trim();
+
+            if(!catId || !catName) {
+                alert("ক্যাটাগরি আইডি এবং নাম দুটিই লিখুন!");
+                return;
+            }
+
+            database.ref('categories/' + catId).set({
+                id: catId,
+                name: catName
+            }, (error) => {
+                if(error) alert("এরর: " + error.message);
+                else {
+                    alert("ক্যাটাগরি সফলভাবে যোগ হয়েছে!");
+                    document.getElementById('cat-id').value = '';
+                    document.getElementById('cat-name').value = '';
+                }
+            });
+        }
+
         function uploadVideo() {
             const title = document.getElementById('v-title').value;
             const thumb = document.getElementById('v-thumb').value;
@@ -210,47 +245,35 @@
             document.getElementById('v-url').value = '';
         }
 
-        // Save Monetag
         function saveMonetag() {
             const val = document.getElementById('ad-monetag').value;
-            database.ref('ad_config/monetag_id').set(val, (err) => {
-                if(!err) alert("Monetag ID সফলভাবে সেভ হয়েছে!");
-            });
+            database.ref('ad_config/monetag_id').set(val, (err) => { if(!err) alert("Monetag ID সেভ হয়েছে!"); });
         }
 
-        // Save Adsgram
         function saveAdsgram() {
             const val = document.getElementById('ad-adsgram').value;
-            database.ref('ad_config/adsgram_id').set(val, (err) => {
-                if(!err) alert("Adsgram Block ID সেভ হয়েছে!");
-            });
+            database.ref('ad_config/adsgram_id').set(val, (err) => { if(!err) alert("Adsgram Block ID সেভ হয়েছে!"); });
         }
 
-        // Save Banner Ads
         function saveBanner() {
             const val = document.getElementById('ad-banner').value;
-            database.ref('ad_config/banner_code').set(val, (err) => {
-                if(!err) alert("Banner Code সেভ হয়েছে!");
-            });
+            database.ref('ad_config/banner_code').set(val, (err) => { if(!err) alert("Banner Code সেভ হয়েছে!"); });
         }
 
-        // Add Custom Links
         function addCustomLink() {
             const title = document.getElementById('link-title').value;
             const url = document.getElementById('link-url').value;
-
             if(!title || !url) { alert("Title এবং URL দুটিই দিন।"); return; }
 
             database.ref('custom_links').push().set({ title: title, url: url }, (err) => {
                 if(!err) {
-                    alert("লিংক সফলভাবে যোগ করা হয়েছে!");
+                    alert("লিংক যোগ করা হয়েছে!");
                     document.getElementById('link-title').value = '';
                     document.getElementById('link-url').value = '';
                 }
             });
         }
 
-        // Save Global Settings
         function saveGlobalSettings() {
             const botlink = document.getElementById('set-botlink').value;
             const ytid = document.getElementById('set-ytid').value;
@@ -261,7 +284,7 @@
                 yt_id: ytid,
                 daily_limit: limit
             }, (err) => {
-                if(!err) alert("সেটিংস সফলভাবে আপডেট করা হয়েছে!");
+                if(!err) alert("সেটিংস আপডেট করা হয়েছে!");
             });
         }
     </script>
