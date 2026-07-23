@@ -45,7 +45,25 @@
 <div class="container">
     <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
 
-    <!-- 1. Video Upload Section -->
+    <!-- 1. Ad Settings / Setup Section (এখানে আপনার অ্যাড কোড বা আইডি কন্ট্রোল করতে পারবেন) -->
+    <div class="card">
+        <h2><i class="fas fa-ad"></i> অ্যাপ ও অ্যাড সেটিংস</h2>
+        <div class="form-group">
+            <label>Monetag Zone ID / Ad Script</label>
+            <input type="text" id="monetagInput" placeholder="আপনার মনিট্যাগ আইডি দিন">
+        </div>
+        <div class="form-group">
+            <label>Adsgram Block ID</label>
+            <input type="text" id="adsgramInput" placeholder="আপনার এডসগ্রাম ব্লক আইডি দিন">
+        </div>
+        <div class="form-group">
+            <label>ব্যানার অ্যাড কোড (HTML/Banner Script)</label>
+            <textarea id="bannerCodeInput" rows="3" placeholder="ব্যানার অ্যাড কোড এখানে পেস্ট করুন"></textarea>
+        </div>
+        <button class="btn" id="saveAdBtn">অ্যাড সেটিংস সেভ করুন</button>
+    </div>
+
+    <!-- 2. Video Upload Section -->
     <div class="card">
         <h2><i class="fas fa-video"></i> নতুন ভিডিও আপলোড করুন</h2>
         <div class="form-group">
@@ -73,7 +91,7 @@
         <button class="btn" id="uploadBtn">ভিডিও পাবলিশ করুন</button>
     </div>
 
-    <!-- 2. Manage / Delete Videos Section -->
+    <!-- 3. Manage / Delete Videos Section -->
     <div class="card">
         <h2><i class="fas fa-list"></i> ভিডিও ম্যানেজ ও ডিলিট করুন</h2>
         <div id="adminVideoList">
@@ -81,7 +99,7 @@
         </div>
     </div>
 
-    <!-- 3. Category Manager -->
+    <!-- 4. Category Manager -->
     <div class="card">
         <h2><i class="fas fa-folder-plus"></i> ক্যাটেগরি যোগ করুন</h2>
         <div class="form-group">
@@ -101,7 +119,7 @@
 <!-- Firebase Script -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";  
-    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";  
+    import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";  
       
     const firebaseConfig = {  
       apiKey: "AIzaSyB1ZubF0ZPvtdhcWWBa2PGorU7lx0OkN4I",
@@ -124,13 +142,40 @@
         setTimeout(() => t.style.display = 'none', 2000);
     }
 
+    // Load Existing Ad Settings
+    onValue(ref(db, 'ad_settings'), snap => {
+        if(snap.exists()) {
+            const data = snap.val();
+            document.getElementById('monetagInput').value = data.monetagId || '';
+            document.getElementById('adsgramInput').value = data.adsgramId || '';
+            document.getElementById('bannerCodeInput').value = data.bannerAdCode || '';
+        }
+    });
+
+    // Save Ad Settings to Firebase
+    document.getElementById('saveAdBtn').onclick = () => {
+        const monetagId = document.getElementById('monetagInput').value.trim();
+        const adsgramId = document.getElementById('adsgramInput').value.trim();
+        const bannerAdCode = document.getElementById('bannerCodeInput').value.trim();
+
+        set(ref(db, 'ad_settings'), {
+            monetagId,
+            adsgramId,
+            bannerAdCode
+        }).then(() => {
+            showToast('অ্যাড সেটিংস সফলভাবে আপডেট হয়েছে!');
+        }).catch(err => {
+            alert('ত্রুটি: ' + err.message);
+        });
+    };
+
     // 1. Upload Video Logic
     document.getElementById('uploadBtn').onclick = () => {
         const title = document.getElementById('vTitle').value.trim();
         const image_url = document.getElementById('vImage').value.trim();
         const download_link = document.getElementById('vLink').value.trim();
         const category = document.getElementById('vCategory').value;
-        theAdsCount = parseInt(document.getElementById('vAdsCount').value) || 1;
+        const theAdsCount = parseInt(document.getElementById('vAdsCount').value) || 1;
 
         if(!title || !image_url || !download_link || !category) {
             alert('দয়া করে সব ঘরগুলো পূরণ করুন!');
