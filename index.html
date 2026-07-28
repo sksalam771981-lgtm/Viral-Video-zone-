@@ -12,6 +12,8 @@
 <!-- TELEGRAM WEB APP SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+<!-- MONETAG SDK -->
+<script src='//libtl.com/sdk.js' data-zone='11442343' data-sdk='show_11442343'></script>
 <style>
 /* --- DESIGN SYSTEM --- */
 :root { --primary: #8b5cf6; --primary-gradient: linear-gradient(135deg, #8b5cf6, #ec4899); --bg-main: #0f0f23; --bg-card: #1a1a2e; --bg-nav: rgba(30, 30, 48, 0.95); --text-main: #ffffff; --text-muted: #9ca3af; --border: 1px solid rgba(255,255,255,0.08); }
@@ -183,34 +185,42 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebas
 import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
 const firebaseConfig = {
-    
-apiKey: "AIzaSyCtKYGQ-fvuVifuDNJ_tlNmKJ2gjEqyYWU",
-  authDomain: "viralzone-3e974.firebaseapp.com",
-  databaseURL: "https://viralzone-3e974-default-rtdb.firebaseio.com",
-  projectId: "viralzone-3e974",
-  storageBucket: "viralzone-3e974.firebasestorage.app",
-  messagingSenderId: "63267470809",
-  appId: "1:63267470809:web:fa7f5d92063e69c42aadc8",
-  measurementId: "G-7L6FPDW7X2"
+
+    apiKey: "AIzaSyB1ZubF0ZPvtdhcWWBa2PGorU7lx0OkN4I",
+  authDomain: "admin-726ec.firebaseapp.com",
+  databaseURL: "https://admin-726ec-default-rtdb.firebaseio.com",
+  projectId: "admin-726ec",
+  storageBucket: "admin-726ec.firebasestorage.app",
+  messagingSenderId: "97796496921",
+  appId: "1:97796496921:web:4bf82701a35b6caca4d488",
+  measurementId: "G-Y8Y7S92HD0"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const tg = window.Telegram.WebApp; tg.expand();
 const currentUserId = tg.initDataUnsafe?.user?.id || Math.floor(Math.random() * 90000000) + 10000000;
 
-// আপনার অ্যাডস্ট্রা ডাইরেক্ট লিংকটি এখানে বসিয়ে দিন নিচের কোটেশনের ভেতরে
-const ADSTERRA_DIRECT_LINK = "https://www.effectivecpmnetwork.com/isey6ammc?key=f907b252da2d1ff702c517f3e59d44ba";
-
 let allVideos=[], filters=[], menuLinks=[];
 let bannerAds=[]; 
-let settings={ ads_limit: 20, bot_app_link: "" };
+let settings={ ads_limit: 20, bot_app_link: "", monetag_id: "" };
 let currentFilter = 'all';
+let monetagLoaded = false;
 
 function init() {
     onValue(ref(db, 'settings'), s => { 
         if(s.val()) {
             settings = s.val();
             if(settings.tutorial_id) document.getElementById('tutEmbed').innerHTML=`<iframe src="${settings.tutorial_id}" style="width:100%;height:100%;border:0" allowfullscreen></iframe>`;
+            
+            if(settings.monetag_id && !monetagLoaded) {
+                const script = document.createElement('script');
+                script.src = '//libtl.com/sdk.js';
+                script.dataset.zone = settings.monetag_id;
+                script.dataset.sdk = 'show_' + settings.monetag_id;
+                document.head.appendChild(script);
+                monetagLoaded = true;
+            }
         }
     });
 
@@ -314,6 +324,7 @@ window.handleCardClick = (id, link, req) => {
     const count = getProgress(id);
     if(count >= req) {
         window.open(link, '_blank');
+        // লিংক খোলার সাথে সাথেই প্রোগ্রেস রিসেট করে দেওয়া হচ্ছে যাতে পরবর্তীতে আবার লক হয়ে যায়
         sessionStorage.removeItem('p_' + id);
         renderCards();
     } else {
@@ -338,6 +349,7 @@ window.handleUnlock = (id, link, req) => {
     const count = getProgress(id);
     if(count >= req) { 
         window.open(link, '_blank'); 
+        // লিংক খোলার সাথে সাথেই প্রোগ্রেস রিসেট করে দেওয়া হচ্ছে যাতে পরবর্তীতে আবার লক হয়ে যায়
         sessionStorage.removeItem('p_' + id);
         renderCards();
         return; 
@@ -348,49 +360,23 @@ window.handleUnlock = (id, link, req) => {
         return; 
     }
 
-    showOverlay("Redirecting to Ad...");
-    openAdsterraDirectLink(id, link, req);
+    showOverlay("Processing...");
+    playMixedSequence(id, link, req);
 }
 
-function openAdsterraDirectLink(videoId, link, req) {
-    // অ্যাডস্ট্রা ডাইরেক্ট লিংক নতুন ট্যাবে ওপেন করা হচ্ছে
-    const adWindow = window.open(ADSTERRA_DIRECT_LINK, '_blank');
-    
-    let checkSeconds = 5; // ইউজার অ্যাড পেজে কত সেকেন্ড সময় কাটাবে তা এখানে ঠিক করতে পারেন (যেমন: ৫ সেকেন্ড)
+function playMixedSequence(videoId, link, req) {
     const txt = document.getElementById('loadingText');
-    const sub = document.getElementById('loadingSub');
+    txt.innerText = "Loading Ad...";
     
-    txt.innerText = "Please complete the ad view...";
-    sub.innerText = `Verifying in ${checkSeconds} seconds...`;
-
-    const timer = setInterval(() => {
-        checkSeconds--;
-        if(checkSeconds > 0) { 
-            sub.innerText = `Verifying in ${checkSeconds} seconds...`; 
-        } else {
-            clearInterval(timer);
-            
-            const currentProgress = getProgress(videoId) + 1;
-            sessionStorage.setItem('p_'+videoId, currentProgress);
-
-            incDaily(); 
-
-            if(currentProgress >= req) {
-                incrementViewCount(videoId);
-            }
-
-            renderCards();
-            if(document.getElementById('singleView').style.display==='block') openSingle(videoId);
-            hideOverlay(); 
-            showToast("Progress Updated!");
-            
-            if(currentProgress >= req) {
-                window.open(link, '_blank');
-                sessionStorage.removeItem('p_' + videoId);
-                renderCards();
-            }
-        }
-    }, 1000);
+    if(typeof show_11442343 === 'function') {
+        show_11442343().then(() => {
+            startFinalCountdown(videoId, link, req);
+        }).catch(e => {
+            startFinalCountdown(videoId, link, req);
+        });
+    } else { 
+        startFinalCountdown(videoId, link, req); 
+    }
 }
 
 function incrementViewCount(videoId) {
@@ -404,6 +390,43 @@ function incrementViewCount(videoId) {
         sessionStorage.setItem(storageKey, 'true'); 
     }).catch(err => console.error("View update failed", err));
 }
+
+function startFinalCountdown(videoId, link, req) {
+    let count = 3;
+    const txt = document.getElementById('loadingText');
+    const sub = document.getElementById('loadingSub');
+    txt.innerText = `Ad Completed Successfully!`;
+    sub.innerText = `Updating in ${count} seconds...`;
+    const timer = setInterval(() => {
+        count--;
+        if(count > 0) { sub.innerText = `Updating in ${count} seconds...`; } 
+        else {
+            clearInterval(timer);
+            
+            const currentProgress = getProgress(videoId) + 1;
+            sessionStorage.setItem('p_'+videoId, currentProgress);
+
+            incDaily(); 
+
+            if(currentProgress >= req) {
+      incrementViewCount(videoId);
+            }
+
+            renderCards();
+            if(document.getElementById('singleView').style.display==='block') openSingle(videoId);
+            hideOverlay(); 
+            showToast("Progress Updated!");
+            
+            if(currentProgress >= req) {
+                window.open(link, '_blank');
+                // লিংক খোলার পর প্রোগ্রেস রিসেট করা হচ্ছে
+                sessionStorage.removeItem('p_' + videoId);
+                renderCards();
+            }
+        }
+    }, 1000);
+}
+
 function showOverlay(msg) { document.getElementById('loadingOverlay').style.display = 'flex'; document.getElementById('loadingText').innerText = msg; }
 function hideOverlay() { document.getElementById('loadingOverlay').style.display = 'none'; }
 function showToast(msg) { const t=document.getElementById('toast'); t.innerText=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', 3000); }
