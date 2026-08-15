@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এডমিন প্যানেল - Flexify</title>
+
+    <!-- Font Awesome & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #f63a3a;
+            --dark: #1a1e29;
+            --bg: #edf0f5;
+            --card: #ffffff;
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #333;
+        }
+
+        /* Lock Screen */
+        #pinLock {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .lock-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            width: 88%;
+            max-width: 320px;
+        }
+
+        .lock-card input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .lock-card button {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Admin UI */
+        .admin-box {
+            display: none;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 14px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .upload-btn:disabled {
+            background: #999;
+        }
+
+        /* Post Items */
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f4f4f4;
+        }
+
+        .item img {
+            width: 55px;
+            height: 38px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            font-size: 13px;
+        }
+
+        .del-btn {
+            background: #ffebeb;
+            color: #d90429;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PIN Screen -->
+    <div id="pinLock">
+        <div class="lock-card">
+            <h3><i class="fa-solid fa-lock"></i> এডমিন পিন</h3>
+            <input type="password" id="pinInput" placeholder="পিন লিখুন (1234)">
+            <button onclick="unlock()">প্রবেশ করুন</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-box" id="adminContent">
+        <div class="top-bar">
+            <h2>ড্যাশবোর্ড</h2>
+            <a href="index.html" style="color:var(--primary); text-decoration:none; font-weight:600; font-size:13px;">
+                <i class="fa-solid fa-arrow-left"></i> ওয়েবসাইটে যান
+            </a>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="card">
+            <h3><i class="fa-solid fa-cloud-arrow-up"></i> নতুন পোস্ট আপলোড</h3>
+            <form id="addForm" onsubmit="uploadData(event)">
+                <div class="form-group">
+                    <label>টাইটেল (Title)</label>
+                    <input type="text" id="vTitle" required placeholder="ভিডিও নাম">
+                </div>
+                <div class="form-group">
+                    <label>বিবরণ (Description)</label>
+                    <textarea id="vDesc" rows="2" placeholder="সংক্ষিপ্ত বিবরণ"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ভিডিও লিংক (YouTube / MP4 URL)</label>
+                    <input type="url" id="vUrl" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>থাম্বনেইল ছবি (Photo)</label>
+                    <input type="file" id="vThumb" accept="image/*" required>
+                </div>
+                <button type="submit" class="upload-btn" id="btnSubmit">পোস্ট করুন</button>
+            </form>
+        </div>
+
+        <!-- Post Manage List -->
+        <div class="card">
+            <h3><i class="fa-solid fa-list"></i> সকল পোস্ট</h3>
+            <div id="postList">
+                <p style="text-align:center; color:#888; font-size:12px;">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // আপনার Firebase Config দিন
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // পাসওয়ার্ড যাচাই (ডিফল্ট: 1234)
+        function unlock() {
+            const val = document.getElementById('pinInput').value;
+            if (val === "1234") {
+                document.getElementById('pinLock').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                fetchAdminPosts();
+            } else {
+                alert("ভুল পিন!");
+            }
+        }
+
+        // ছবি ও ডাটা আপলোড
+        async function uploadData(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerText = "আপলোড হচ্ছে...";
+
+            const title = document.getElementById('vTitle').value;
+            const desc = document.getElementById('vDesc').value;
+            const url = document.getElementById('vUrl').value;
+            const file = document.getElementById('vThumb').files[0];
+
+            try {
+                // Storage-এ থাম্বনেইল আপলোড
+                const ref = storage.ref('thumbs/' + Date.now() + '_' + file.name);
+                const task = await ref.put(file);
+                const imgUrl = await task.ref.getDownloadURL();
+
+                // Firestore-এ সেভ
+                await db.collection("posts").add({
+                    title: title,
+                    description: desc,
+                    videoUrl: url,
+                    imageUrl: imgUrl,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("পোস্ট সফল হয়েছে!");
+                document.getElementById('addForm').reset();
+            } catch (err) {
+                alert("এরর: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "পোস্ট করুন";
+            }
+        }
+
+        // পোস্ট তালিকা
+        function fetchAdminPosts() {
+            const list = document.getElementById('postList');
+            db.collection("posts").orderBy("createdAt", "desc").onSnapshot((snap) => {
+                if (snap.empty) {
+                    list.innerHTML = `<p style="text-align:center; color:#888; font-size:12px;">কোনো পোস্ট নেই</p>`;
+                    return;
+                }
+                let html = "";
+                snap.forEach((doc) => {
+                    const d = doc.data();
+                    html += `
+                        <div class="item">
+                            <img src="${d.imageUrl}">
+                            <div class="item-info">
+                                <h4>${d.title}</h4>
+                            </div>
+                            <button class="del-btn" onclick="delPost('${doc.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            });
+        }
+
+        // ডিলিট
+        async function delPost(id) {
+            if (confirm("পোস্টটি মুছে ফেলতে চান?")) {
+                await db.collection("posts").doc(id).delete();
+            }
+        }
+    </script>
+</body>
+</html>
